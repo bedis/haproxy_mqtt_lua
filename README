@@ -1,0 +1,15 @@
+Introduction
+============
+
+This repository contains a lua library to parse and retrieve information from a MQTT CONNECT message.
+It is intentionnaly written to be used with HAProxy and may be useless outside this scope.
+
+The code is split into 2 pieces:
+1. mqtt.lua: contains the MQTT library itself
+2. haproxy_mqtt.lua: creates native HAProxy features (converter, fetches, actions) that can be used in HAProxy's configuration for managing the MQTT CONNECT message
+
+Usage
+=====
+
+* put both mqtt.lua and haproxy_mqtt.lua files in your /etc/haproxy folder or equivalent.
+* update your haproxy's configuration to match your requirements. See haproxy.cfg file, it contains some use cases
