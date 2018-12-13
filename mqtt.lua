@@ -123,16 +123,20 @@ parse = function(buffer)
   local remaininglength = 0
   local encodedByte = tonumber(string.sub(buffer, cur, cur + 1), 16)
   cur = cur + 2
-  while (encodedByte >= 128) do
-    remaininglength = remaininglength + (encodedByte * multiplier)
-    multiplier = multiplier * 128
-    if (multiplier > 128 * 128 * 128) then
-      pkt['error'] = true
-      pkt['errormessage'] = 'announced packet size too big'
-      return pkt
+  if encodedByte >= 128 then
+    while (encodedByte >= 128) do
+      remaininglength = remaininglength + (encodedByte * multiplier)
+      multiplier = multiplier * 128
+      if (multiplier > 128 * 128 * 128) then
+        pkt['error'] = true
+        pkt['errormessage'] = 'announced packet size too big'
+        return pkt
+      end
+      cur = cur + 2
+      encodedByte = tonumber(string.sub(buffer, cur, cur + 1), 16)
     end
-    cur = cur + 2
-    encodedByte = tonumber(string.sub(buffer, cur, cur + 1), 16)
+  else
+    remaininglength = remaininglength + (encodedByte * multiplier)
   end
   if remaininglength * 2 + cur - 1 ~= buffersize then
     pkt['error'] = true
