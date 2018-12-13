@@ -11,12 +11,19 @@ local mqtt = { _version = "0.0.1" }
 -- get string from a buffer, whose size is encoded over 2 bytes, MSB LSB way
 -- the buffer must be in hexa
 -- it returns the string and the size of the string
-local function getfield(buf, pos)
+local function getfield(buf, bufsize, pos)
   local msb = tonumber(string.sub(buf, pos, pos + 1), 16)
   pos = pos + 2
   local lsb = tonumber(string.sub(buf, pos, pos + 1), 16)
   pos = pos + 2
   local len = msb * 256 + lsb
+
+  -- ensure we don't read too further in the buffer
+  -- len * 2 because the string is encoded in hex
+  -- -1 because string index starts at 1
+  if pos + len * 2 - 1 > bufsize then
+    return '', 0
+  end
 
   local str = ''
   local i = pos
@@ -135,7 +142,7 @@ parse = function(buffer)
 
   -- variable header
   -- protocol name
-  pkt['protocolname'], len = getfield(buffer, cur)
+  pkt['protocolname'], len = getfield(buffer, buffersize, cur)
   cur = cur + len
 
   -- protocol level
@@ -161,7 +168,7 @@ parse = function(buffer)
   --   Password
 
   -- client identifier
-  pkt['clientid'], len = getfield(buffer, cur)
+  pkt['clientid'], len = getfield(buffer, buffersize, cur)
   cur = cur + len
 
   -- will topic
@@ -178,13 +185,13 @@ parse = function(buffer)
 
   -- username
   if pkt['flag']['username'] then
-    pkt['username'], len = getfield(buffer, cur)
+    pkt['username'], len = getfield(buffer, buffersize, cur)
     cur = cur + len
   end
 
   -- password
   if pkt['flag']['password'] then
-    pkt['password'], len = getfield(buffer, cur)
+    pkt['password'], len = getfield(buffer, buffersize, cur)
     cur = cur + len
   end
    
