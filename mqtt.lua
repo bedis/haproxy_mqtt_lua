@@ -105,7 +105,7 @@ parse = function(buffer)
   local buffersize = string.len(buffer)
 
   pkt['error'] = false
-  pkt['errormessgae'] = ''
+  pkt['errormessage'] = ''
 
   -- fixed header
   -- byte 1: packet type is bits from 4 to 7, so we must substract bits from 0 to 3
