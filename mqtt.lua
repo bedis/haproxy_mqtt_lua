@@ -115,6 +115,11 @@ parse = function(buffer)
     pkt['errormessage'] = 'Wrong packet type: ' .. pkt['type']
     return pkt
   end
+  if cur + 2 - 1 > buffersize then
+    pkt['error'] = true
+    pkt['errormessage'] = 'Error when parsing the buffer'
+    return pkt
+  end
   cur = cur + 2
 
   -- byte 2: remaininig length (len of "payload + payload size")
@@ -122,6 +127,11 @@ parse = function(buffer)
   local multiplier = 1
   local remaininglength = 0
   local encodedByte = tonumber(string.sub(buffer, cur, cur + 1), 16)
+  if cur + 2 - 1 > buffersize then
+    pkt['error'] = true
+    pkt['errormessage'] = 'Error when parsing the buffer'
+    return pkt
+  end
   cur = cur + 2
   if encodedByte >= 128 then
     while (encodedByte >= 128) do
@@ -130,6 +140,11 @@ parse = function(buffer)
       if (multiplier > 128 * 128 * 128) then
         pkt['error'] = true
         pkt['errormessage'] = 'announced packet size too big'
+        return pkt
+      end
+      if cur + 2 - 1 > buffersize then
+        pkt['error'] = true
+        pkt['errormessage'] = 'Error when parsing the buffer'
         return pkt
       end
       cur = cur + 2
@@ -147,19 +162,39 @@ parse = function(buffer)
   -- variable header
   -- protocol name
   pkt['protocolname'], len = getfield(buffer, buffersize, cur)
+  if cur + len - 1 > buffersize then
+    pkt['error'] = true
+    pkt['errormessage'] = 'Error when parsing the buffer'
+    return pkt
+  end
   cur = cur + len
 
   -- protocol level
   pkt['protocollevel'] = tonumber(string.sub(buffer, cur, cur + 1), 16)
+  if cur + 2 - 1 > buffersize then
+    pkt['error'] = true
+    pkt['errormessage'] = 'Error when parsing the buffer'
+    return pkt
+  end
   cur = cur + 2
 
   -- flags
   pkt['flag'] = parseflags(tonumber(string.sub(buffer, cur, cur + 1), 16))
+  if cur + 2 - 1 > buffersize then
+    pkt['error'] = true
+    pkt['errormessage'] = 'Error when parsing the buffer'
+    return pkt
+  end
   cur = cur + 2
 
   -- keepalive
   -- encoded over 2 bytes, MSB + LSB
   pkt['keepalive'] = tonumber(string.sub(buffer, cur, cur + 1), 16) * 256 + tonumber(string.sub(buffer, cur + 2, cur + 2 + 1), 16)
+  if cur + 4 - 1 > buffersize then
+    pkt['error'] = true
+    pkt['errormessage'] = 'Error when parsing the buffer'
+    return pkt
+  end
   cur = cur + 4
 
 
@@ -173,6 +208,11 @@ parse = function(buffer)
 
   -- client identifier
   pkt['clientid'], len = getfield(buffer, buffersize, cur)
+  if cur + len - 1 > buffersize then
+    pkt['error'] = true
+    pkt['errormessage'] = 'Error when parsing the buffer'
+    return pkt
+  end
   cur = cur + len
 
   -- will topic
@@ -180,22 +220,44 @@ parse = function(buffer)
   if pkt['flag']['will'] then
     -- skip will topic
     -- size encoded over 2 bytes, MSB + LSB + data len
-    cur = cur + 4 + tonumber(string.sub(buffer, cur, cur + 1), 16) * 256 + tonumber(string.sub(buffer, cur + 2, cur + 2 + 1), 16)
+    len = 4 + tonumber(string.sub(buffer, cur, cur + 1), 16) * 256 + tonumber(string.sub(buffer, cur + 2, cur + 2 + 1), 16)
+    if cur + len - 1 > buffersize then
+      pkt['error'] = true
+      pkt['errormessage'] = 'Error when parsing the buffer'
+      return pkt
+    end
+    cur = cur + len
     
     -- skip will message
     -- size encoded over 2 bytes, MSB + LSB + data len
-    cur = cur + 4 + tonumber(string.sub(buffer, cur, cur + 1), 16) * 256 + tonumber(string.sub(buffer, cur + 2, cur + 2 + 1), 16)
+    len = 4 + tonumber(string.sub(buffer, cur, cur + 1), 16) * 256 + tonumber(string.sub(buffer, cur + 2, cur + 2 + 1), 16)
+    if cur + len - 1 > buffersize then
+      pkt['error'] = true
+      pkt['errormessage'] = 'Error when parsing the buffer'
+      return pkt
+    end
+    cur = cur + len
   end
 
   -- username
   if pkt['flag']['username'] then
     pkt['username'], len = getfield(buffer, buffersize, cur)
+    if cur + len - 1 > buffersize then
+      pkt['error'] = true
+      pkt['errormessage'] = 'Error when parsing the buffer'
+      return pkt
+    end
     cur = cur + len
   end
 
   -- password
   if pkt['flag']['password'] then
     pkt['password'], len = getfield(buffer, buffersize, cur)
+    if cur + len - 1 > buffersize then
+      pkt['error'] = true
+      pkt['errormessage'] = 'Error when parsing the buffer'
+      return pkt
+    end
     cur = cur + len
   end
    
