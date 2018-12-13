@@ -6,7 +6,7 @@
 -- under the terms of the MIT license. See LICENSE for details.
 --
 
-local mqtt = { _version = "0.0.1" }
+local mqtt = { _version = "0.0.2" }
 
 -- get string from a buffer, whose size is encoded over 2 bytes, MSB LSB way
 -- the buffer must be in hexa
